@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BEE Lab 시간표</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f0f2f5;
+    --line: #e3e6eb;
+    --line-strong: #c9ced6;
+    --text: #1c2129;
+    --text-2: #5b6472;
+    --text-3: #8b94a3;
+    --accent: #2f7d5c;
+    --accent-ink: #ffffff;
+    --danger: #c9463d;
+    --shadow: 0 6px 24px rgba(20, 30, 45, 0.10);
+    --block-ink: #ffffff;
+    --chip-bg: #ffffff;
+    --hour-line: #e6e9ee;
+    --half-line: #f1f3f6;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14171c;
+      --surface: #1c2027;
+      --surface-2: #232830;
+      --line: #2c323b;
+      --line-strong: #414957;
+      --text: #e8ebf0;
+      --text-2: #a4acb9;
+      --text-3: #737c8a;
+      --accent: #4fb489;
+      --accent-ink: #0f1a15;
+      --danger: #e0685f;
+      --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+      --block-ink: #ffffff;
+      --chip-bg: #1c2027;
+      --hour-line: #2a2f38;
+      --half-line: #21262e;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #14171c;
+    --surface: #1c2027;
+    --surface-2: #232830;
+    --line: #2c323b;
+    --line-strong: #414957;
+    --text: #e8ebf0;
+    --text-2: #a4acb9;
+    --text-3: #737c8a;
+    --accent: #4fb489;
+    --accent-ink: #0f1a15;
+    --danger: #e0685f;
+    --shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+    --block-ink: #ffffff;
+    --chip-bg: #1c2027;
+    --hour-line: #2a2f38;
+    --half-line: #21262e;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+  button:focus-visible, input:focus-visible, select:focus-visible, .block:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  .mono { font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+
+  .app { max-width: 1180px; margin: 0 auto; padding: 20px 20px 48px; }
+
+  /* ---------- header ---------- */
+  .top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px;
+    margin-bottom: 14px;
+  }
+  .brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+  .brand h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+  .brand .lab { font-size: 12px; color: var(--text-3); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 600; }
+  .sem {
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sem select {
+    appearance: none; -webkit-appearance: none;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 30px 7px 12px; font-weight: 600; font-size: 14px;
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-2) 50%), linear-gradient(135deg, var(--text-2) 50%, transparent 50%);
+    background-position: calc(100% - 15px) 55%, calc(100% - 10px) 55%;
+    background-size: 5px 5px, 5px 5px; background-repeat: no-repeat;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px;
+    padding: 7px 12px; font-weight: 500; font-size: 13.5px;
+    transition: background .12s, border-color .12s;
+  }
+  .btn:hover { background: var(--surface-2); border-color: var(--line-strong); }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn.primary:hover { filter: brightness(1.06); }
+  .btn.ghost { border-color: transparent; background: transparent; color: var(--text-2); }
+  .btn.ghost:hover { background: var(--surface-2); }
+  .btn.danger { color: var(--danger); }
+  .btn.small { padding: 5px 9px; font-size: 12.5px; border-radius: 7px; }
+
+  .status { font-size: 12px; color: var(--text-3); min-width: 72px; text-align: right; }
+  .status.saving { color: var(--text-2); }
+  .status.error { color: var(--danger); }
+
+  /* ---------- filter chips ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 5px 11px 5px 9px; border-radius: 999px;
+    background: var(--chip-bg); border: 1px solid var(--line);
+    font-size: 13px; font-weight: 500; color: var(--text-2);
+    transition: background .12s, color .12s, border-color .12s;
+  }
+  .chip .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--c, var(--text-3)); flex: none; }
+  .chip:hover { border-color: var(--line-strong); color: var(--text); }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .chip[aria-pressed="true"] .dot { box-shadow: 0 0 0 2px var(--bg); }
+  .chip .count { font-size: 11px; opacity: .7; }
+  .chips .spacer { flex: 1; }
+  .hint { font-size: 12px; color: var(--text-3); }
+
+  /* ---------- timetable ---------- */
+  .sheet {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden;
+  }
+  .scroll { overflow-x: auto; }
+
+  /* 요일 = 행, 시간 = 가로축 */
+  .tt {
+    --day-w: 44px;
+    --hpx: 88px;
+    display: grid;
+    grid-template-columns: var(--day-w) minmax(calc(var(--hours) * var(--hpx)), 1fr);
+    min-width: calc(var(--day-w) + var(--hours) * var(--hpx));
+  }
+  .tt .corner { border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); }
+  .tt .hours {
+    position: relative; height: 30px;
+    border-bottom: 1px solid var(--line);
+  }
+  .tt .hours .h {
+    position: absolute; top: 9px; transform: translateX(-50%);
+    font-size: 11.5px; color: var(--text-3); white-space: nowrap;
+  }
+  .tt .hours .h.first { transform: none; left: 3px !important; }
+  .tt .hours .h.last { transform: translateX(-100%); margin-left: -3px; }
+  .tt .daylab {
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 13px; color: var(--text-2);
+    border-right: 1px solid var(--line); border-bottom: 1px solid var(--half-line);
+  }
+  .tt .daylab.today { color: var(--accent); }
+  .tt .track {
+    position: relative;
+    border-bottom: 1px solid var(--half-line);
+    background-image:
+      repeating-linear-gradient(to right, var(--hour-line) 0 1px, transparent 1px var(--hourw)),
+      repeating-linear-gradient(to right, transparent 0 calc(var(--hourw) / 2), var(--half-line) calc(var(--hourw) / 2) calc(var(--hourw) / 2 + 1px), transparent calc(var(--hourw) / 2 + 1px) var(--hourw));
+  }
+  .tt .track.today { background-color: color-mix(in srgb, var(--accent) 5%, transparent); }
+  .tt .row:last-child .track, .tt .row:last-child .daylab { border-bottom: 0; }
+  .tt .row { display: contents; }
+
+  .block {
+    position: absolute;
+    height: 26px;
+    border-radius: 5px;
+    padding: 0 8px;
+    color: var(--block-ink);
+    background: var(--c);
+    overflow: hidden;
+    text-align: left;
+    border: 0;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.10);
+    display: flex; align-items: center; gap: 7px;
+    transition: filter .12s;
+    font-family: inherit;
+    white-space: nowrap;
+  }
+  .block:hover { filter: brightness(1.07); z-index: 3; }
+  .block .t {
+    font-weight: 600; font-size: 12.5px; letter-spacing: -0.01em;
+    flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  }
+  .block .who {
+    font-size: 11.5px; opacity: .92;
+    flex: 0 2 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  }
+  .block .meta { font-size: 10.5px; opacity: .8; margin-left: auto; flex: none; padding-left: 2px; }
+  .block .tag {
+    font-size: 10px; padding: 0 5px; border-radius: 4px; flex: none;
+    background: rgba(255,255,255,0.22); line-height: 15px;
+  }
+
+  /* 간략 모드 — 이름 없이 얇은 줄만 */
+  .block.bar { height: 9px; padding: 0; border-radius: 999px; box-shadow: none; min-width: 3px; }
+  .block.bar > * { display: none; }
+  .block.bar:hover { filter: none; box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--c); }
+  .tt.dim .block:not(.hl) { opacity: .16; }
+  .tt.dim .block.hl { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--c); }
+
+  /* 과목 범례 */
+  .legend { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .legend .li {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 4px 10px 4px 8px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface);
+    font-size: 12.5px; color: var(--text-2); text-align: left;
+  }
+  .legend .li:hover { border-color: var(--line-strong); color: var(--text); }
+  .legend .li[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .legend .li .sq { width: 10px; height: 10px; border-radius: 3px; background: var(--c); flex: none; }
+  .legend .li .who { color: var(--text-3); }
+  .legend .li[aria-pressed="true"] .who { color: var(--bg); opacity: .7; }
+  .legend .cap { font-size: 12px; color: var(--text-3); align-self: center; margin-right: 2px; }
+
+  .empty {
+    padding: 56px 20px; text-align: center; color: var(--text-3);
+  }
+  .empty strong { display: block; color: var(--text-2); font-weight: 600; margin-bottom: 4px; }
+
+  .foot { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 12px; align-items: center; font-size: 12px; color: var(--text-3); }
+  .foot .spacer { flex: 1; }
+
+  /* ---------- dialogs ---------- */
+  dialog {
+    border: 1px solid var(--line); border-radius: 14px; padding: 0;
+    background: var(--surface); color: var(--text);
+    box-shadow: var(--shadow); width: min(440px, calc(100vw - 32px));
+  }
+  dialog::backdrop { background: rgba(10, 14, 20, 0.45); }
+  dialog form { margin: 0; }
+  .dlg-h { display: flex; align-items: center; gap: 10px; padding: 16px 18px 0; }
+  .dlg-h h2 { margin: 0; font-size: 16px; font-weight: 700; flex: 1; }
+  .dlg-b { padding: 14px 18px 4px; display: grid; gap: 12px; }
+  .dlg-f { display: flex; gap: 8px; padding: 12px 18px 16px; align-items: center; }
+  .dlg-f .spacer { flex: 1; }
+  .field { display: grid; gap: 5px; }
+  .field label { font-size: 12px; font-weight: 600; color: var(--text-2); }
+  .field input, .field select {
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; width: 100%; font-size: 14px;
+  }
+  .field input:hover, .field select:hover { border-color: var(--line-strong); }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .row3 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
+  .row3 .dash { padding-bottom: 10px; color: var(--text-3); }
+  .days { display: flex; gap: 6px; }
+  .days label {
+    flex: 1; text-align: center; padding: 8px 0; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--surface-2); font-weight: 500; cursor: pointer;
+    user-select: none;
+  }
+  .days input { position: absolute; opacity: 0; pointer-events: none; }
+  .days label:has(input:checked) { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .days label:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .days.people { flex-wrap: wrap; }
+  .days.people label { flex: 0 0 auto; padding: 6px 12px; border-radius: 999px; }
+  .days.people label:has(input:checked) { background: var(--text); border-color: var(--text); color: var(--bg); }
+  .days.people .none { font-size: 12.5px; color: var(--text-3); padding: 6px 0; }
+  #newPersonWrap input {
+    background: var(--surface-2); border: 1px dashed var(--line-strong); border-radius: 8px;
+    padding: 8px 10px; width: 100%; font-size: 13.5px;
+  }
+  .inline-new { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: end; }
+  .err { font-size: 12.5px; color: var(--danger); min-height: 1em; }
+
+  .plist { display: grid; gap: 6px; }
+  .prow {
+    display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
+    padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-2);
+  }
+  .prow .sw { width: 22px; height: 22px; border-radius: 6px; background: var(--c); border: 0; padding: 0; position: relative; }
+  .prow .name { border: 0; background: transparent; padding: 4px 6px; border-radius: 6px; font-weight: 600; width: 100%; }
+  .prow .name:hover { background: var(--surface); }
+  .prow .meta { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+  .swatches button { width: 24px; height: 24px; border-radius: 6px; border: 0; background: var(--c); padding: 0; }
+  .swatches button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--text); }
+
+  textarea.json {
+    width: 100%; min-height: 200px; resize: vertical;
+    font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; color: var(--text);
+  }
+
+  .confirm { padding: 10px 12px; border-radius: 8px; background: var(--surface-2); font-size: 13px; display: flex; gap: 8px; align-items: center; }
+  .confirm .spacer { flex: 1; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); padding: 9px 14px; border-radius: 999px;
+    font-size: 13px; box-shadow: var(--shadow); z-index: 50;
+    animation: pop .18s ease-out;
+  }
+  @keyframes pop { from { opacity: 0; transform: translate(-50%, 6px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+  @media (max-width: 640px) {
+    .app { padding: 12px 10px 32px; }
+    .brand h1 { font-size: 17px; }
+    .tt { --hpx: 58px; --day-w: 34px; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+  @media print {
+    .top .btn, .chips .btn, .status, .foot, dialog { display: none !important; }
+    .app { padding: 0; max-width: none; }
+    .sheet { border: 0; }
+  }
+</style>
+</head><body>
+
+<!-- 초기(예시) 데이터 — 저장이 되지 않는 환경에서는 이 블록을 직접 수정하세요 -->
+<script id="tt-seed" type="application/json">
+{
+  "semesters": ["2026-2"],
+  "currentSemester": "2026-2",
+  "people": [
+    { "id": "p1", "name": "김민재" },
+    { "id": "p2", "name": "이서연" },
+    { "id": "p3", "name": "박지훈" },
+    { "id": "p4", "name": "최수아" }
+  ],
+  "subjectColors": {
+    "생체재료공학특론": "#E8636A",
+    "일반생물학실험": "#F0913F",
+    "고급생물통계학": "#4A8FE0",
+    "영어논문작성법": "#3BA9A2",
+    "나노바이오공학": "#55B36B",
+    "생체신호처리": "#7F6BE0",
+    "세포생물학특론": "#D466B8",
+    "공학수학 조교": "#C9A227",
+    "대학원 세미나": "#6B7C93"
+  },
+  "classes": [
+    { "id": "c1", "sem": "2026-2", "personId": "p1", "title": "생체재료공학특론", "room": "공A 501", "type": "수강", "days": [0, 2], "start": "10:30", "end": "12:00" },
+    { "id": "c2", "sem": "2026-2", "personId": "p1", "title": "일반생물학실험", "room": "과학관 305", "type": "조교", "days": [3], "start": "13:00", "end": "16:00" },
+    { "id": "c3", "sem": "2026-2", "personId": "p2", "title": "고급생물통계학", "room": "공B 204", "type": "수강", "days": [1, 3], "start": "09:00", "end": "10:30" },
+    { "id": "c4", "sem": "2026-2", "personId": "p2", "title": "영어논문작성법", "room": "국제관 101", "type": "수강", "days": [4], "start": "14:00", "end": "17:00" },
+    { "id": "c5", "sem": "2026-2", "personId": "p3", "title": "나노바이오공학", "room": "공A 501", "type": "수강", "days": [0, 2], "start": "13:30", "end": "15:00" },
+    { "id": "c6", "sem": "2026-2", "personId": "p3", "title": "생체신호처리", "room": "공B 310", "type": "수강", "days": [1], "start": "15:00", "end": "18:00" },
+    { "id": "c7", "sem": "2026-2", "personId": "p4", "title": "세포생물학특론", "room": "과학관 210", "type": "수강", "days": [1, 3], "start": "10:30", "end": "12:00" },
+    { "id": "c8", "sem": "2026-2", "personId": "p4", "title": "공학수학 조교", "room": "공C 105", "type": "조교", "days": [2], "start": "15:00", "end": "17:00" },
+    { "id": "c9", "sem": "2026-2", "personId": "p1", "title": "대학원 세미나", "room": "공A 501", "type": "세미나", "days": [4], "start": "10:00", "end": "12:00" },
+    { "id": "c10", "sem": "2026-2", "personId": "p3", "title": "대학원 세미나", "room": "공A 501", "type": "세미나", "days": [4], "start": "10:00", "end": "12:00" },
+    { "id": "c11", "sem": "2026-2", "personId": "p2", "title": "대학원 세미나", "room": "공A 501", "type": "세미나", "days": [4], "start": "10:00", "end": "12:00" },
+    { "id": "c12", "sem": "2026-2", "personId": "p4", "title": "대학원 세미나", "room": "공A 501", "type": "세미나", "days": [4], "start": "10:00", "end": "12:00" },
+    { "id": "c13", "sem": "2026-2", "personId": "p4", "title": "나노바이오공학", "room": "공A 501", "type": "수강", "days": [0, 2], "start": "13:30", "end": "15:00" }
+  ]
+}
+</script>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <span class="lab">BEE Lab</span>
+      <h1>연구원 강의 시간표</h1>
+    </div>
+    <div class="sem">
+      <select id="semSelect" aria-label="학기 선택"></select>
+      <button class="btn ghost small" id="semAddBtn" type="button" title="새 학기 추가">＋ 학기</button>
+    </div>
+    <button class="btn" id="peopleBtn" type="button">연구원 관리</button>
+    <button class="btn primary" id="addBtn" type="button">＋ 강의 추가</button>
+    <span class="status" id="status" aria-live="polite"></span>
+  </header>
+
+  <div class="chips" id="chips"></div>
+
+  <section class="sheet">
+    <div class="scroll" id="sheet"></div>
+  </section>
+
+  <div class="legend" id="legend"></div>
+
+  <footer class="foot">
+    <span id="footNote">블록을 누르면 수정·삭제할 수 있어요.</span>
+    <span class="spacer"></span>
+    <button class="btn ghost small" id="dataBtn" type="button">데이터 내보내기 / 불러오기</button>
+  </footer>
+</div>
+
+<!-- 강의 추가/수정 -->
+<dialog id="classDlg">
+  <form method="dialog" id="classForm">
+    <div class="dlg-h"><h2 id="classDlgTitle">강의 추가</h2></div>
+    <div class="dlg-b">
+      <div class="field">
+        <label>듣는 사람 <span id="fPeopleHint" style="font-weight:400;color:var(--text-3)">(여러 명 선택 가능)</span></label>
+        <div class="days people" id="fPeople"></div>
+        <div id="newPersonWrap">
+          <input id="fNewPerson" placeholder="＋ 목록에 없는 새 연구원 이름" autocomplete="off">
+        </div>
+      </div>
+      <div class="field">
+        <label for="fTitle">과목 이름</label>
+        <input id="fTitle" required placeholder="예: 생체재료공학특론" autocomplete="off" list="subjectList">
+        <datalist id="subjectList"></datalist>
+      </div>
+      <div class="field">
+        <label>과목 색</label>
+        <div class="swatches" id="fColor"></div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label for="fRoom">강의실 <span style="font-weight:400;color:var(--text-3)">(선택)</span></label>
+          <input id="fRoom" placeholder="예: 공A 501" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="fType">구분</label>
+          <select id="fType">
+            <option>수강</option><option>조교</option><option>청강</option><option>세미나</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>요일</label>
+        <div class="days" id="fDays">
+          <label><input type="checkbox" value="0">월</label>
+          <label><input type="checkbox" value="1">화</label>
+          <label><input type="checkbox" value="2">수</label>
+          <label><input type="checkbox" value="3">목</label>
+          <label><input type="checkbox" value="4">금</label>
+          <label><input type="checkbox" value="5">토</label>
+        </div>
+      </div>
+      <div class="row3">
+        <div class="field"><label for="fStart">시작</label><input id="fStart" type="time" step="300" required value="10:30" class="mono"></div>
+        <span class="dash">–</span>
+        <div class="field"><label for="fEnd">종료</label><input id="fEnd" type="time" step="300" required value="12:00" class="mono"></div>
+      </div>
+      <div class="err" id="classErr"></div>
+    </div>
+    <div class="dlg-f">
+      <button type="button" class="btn ghost danger" id="classDelete" hidden>삭제</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="classCancel">취소</button>
+      <button type="submit" class="btn primary" id="classSave">저장</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- 연구원 관리 -->
+<dialog id="peopleDlg">
+  <div class="dlg-h"><h2>연구원 관리</h2></div>
+  <div class="dlg-b">
+    <div class="plist" id="plist"></div>
+    <div class="inline-new">
+      <div class="field">
+        <label for="pNewName">새 연구원</label>
+        <input id="pNewName" placeholder="이름" autocomplete="off">
+      </div>
+      <button class="btn" id="pAddBtn" type="button">추가</button>
+    </div>
+    <div class="err" id="peopleErr"></div>
+    <div id="peopleConfirm" hidden></div>
+  </div>
+  <div class="dlg-f"><span class="spacer"></span><button class="btn primary" id="peopleClose" type="button">닫기</button></div>
+</dialog>
+
+<!-- 학기 추가 -->
+<dialog id="semDlg">
+  <form method="dialog" id="semForm">
+    <div class="dlg-h"><h2>새 학기 추가</h2></div>
+    <div class="dlg-b">
+      <div class="field">
+        <label for="semName">학기 이름</label>
+        <input id="semName" placeholder="예: 2027-1" required autocomplete="off">
+      </div>
+      <div class="field">
+        <label><input type="checkbox" id="semCopy"> 지금 학기의 강의를 복사해서 시작</label>
+      </div>
+      <div class="err" id="semErr"></div>
+    </div>
+    <div class="dlg-f">
+      <button type="button" class="btn ghost danger" id="semDelete">현재 학기 삭제</button>
+      <span class="spacer"></span>
+      <button type="button" class="btn" id="semCancel">취소</button>
+      <button type="submit" class="btn primary">추가</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- 같은 과목을 여러 명이 들을 때: 누구 항목을 수정할지 -->
+<dialog id="pickDlg">
+  <div class="dlg-h"><h2 id="pickTitle">강의 선택</h2></div>
+  <div class="dlg-b">
+    <p class="hint" style="margin:0">누구의 강의를 수정할까요?</p>
+    <div class="chips" id="pickList" style="margin:0"></div>
+  </div>
+  <div class="dlg-f"><span class="spacer"></span><button class="btn" id="pickClose" type="button">닫기</button></div>
+</dialog>
+
+<!-- 데이터 -->
+<dialog id="dataDlg">
+  <div class="dlg-h"><h2>데이터 내보내기 / 불러오기</h2></div>
+  <div class="dlg-b">
+    <p class="hint" style="margin:0">아래 JSON을 복사해 백업하거나, 다른 데이터를 붙여 넣고 "불러오기"를 누르세요. 파일로 직접 배포할 때는 HTML 안의 <code>tt-seed</code> 블록에 붙여 넣으면 됩니다.</p>
+    <textarea class="json" id="dataText" spellcheck="false"></textarea>
+    <div class="err" id="dataErr"></div>
+  </div>
+  <div class="dlg-f">
+    <button class="btn" id="dataCopy" type="button">복사</button>
+    <button class="btn" id="dataImport" type="button">불러오기</button>
+    <span class="spacer"></span>
+    <button class="btn primary" id="dataClose" type="button">닫기</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  'use strict';
+  const DAY_NAMES = ['월', '화', '수', '목', '금', '토'];
+  const PALETTE = ['#E8636A', '#F0913F', '#C9A227', '#55B36B', '#3BA9A2', '#4A8FE0', '#7F6BE0', '#D466B8', '#8C6F4E', '#6B7C93'];
+  const STORAGE_KEY = 'beelab-timetable-v1';
+  const DATA_PATH = 'data/timetable.json';
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const uid = (p) => p + Math.random().toString(36).slice(2, 8);
+  const toMin = (t) => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+  const fmt = (t) => t;
+
+  // ---------- state ----------
+  let state = null;
+  let filter = 'all';              // 'all' | personId | 'subj:과목명'
+  let showNames = true;            // 전체 보기에서 이름까지 보여줄지
+  let editingId = null;
+  let saver = null;                // { kind: 'artifact' | 'local' | 'none', write(json) }
+  let saveTimer = null;
+
+  function seed() {
+    try { return JSON.parse($('#tt-seed').textContent); } catch (e) { return { semesters: ['1학기'], currentSemester: '1학기', people: [], classes: [] }; }
+  }
+  function normalize(s) {
+    s.semesters = Array.isArray(s.semesters) && s.semesters.length ? s.semesters : ['1학기'];
+    if (!s.semesters.includes(s.currentSemester)) s.currentSemester = s.semesters[s.semesters.length - 1];
+    s.people = Array.isArray(s.people) ? s.people : [];
+    s.classes = Array.isArray(s.classes) ? s.classes : [];
+    s.subjectColors = (s.subjectColors && typeof s.subjectColors === 'object') ? s.subjectColors : {};
+    // 예전 버전(사람별 색) 데이터도 열리도록: 색이 없는 과목은 지금 채워둠
+    s.classes.forEach(c => { const k = subjKey(c.title); if (k && !s.subjectColors[k]) s.subjectColors[k] = pickSubjectColor(s, k); });
+    return s;
+  }
+
+  // ---------- 과목 색 ----------
+  const subjKey = (t) => String(t ?? '').trim();
+  function pickSubjectColor(s, key) {
+    const used = new Set(Object.values(s.subjectColors || {}));
+    const free = PALETTE.filter(c => !used.has(c));
+    if (free.length) return free[0];
+    // 팔레트를 다 쓰면 이름으로 안정적으로 골라 재사용
+    let h = 0; for (const ch of key) h = (h * 31 + ch.charCodeAt(0)) % 9973;
+    return PALETTE[h % PALETTE.length];
+  }
+  function colorOf(title) {
+    const k = subjKey(title);
+    if (!state.subjectColors[k]) state.subjectColors[k] = pickSubjectColor(state, k);
+    return state.subjectColors[k];
+  }
+
+  // ---------- persistence ----------
+  async function initSaver() {
+    // 1) claude.ai 아티팩트: 데이터 파일을 새 버전으로 게시 (모든 열람자에게 공유)
+    try {
+      if (window.claude && typeof window.claude.use === 'function') {
+        const art = await window.claude.use('artifact');
+        if (art) {
+          saver = {
+            kind: 'artifact',
+            async write(json) { await art.publish({ [DATA_PATH]: { content: json, contentType: 'application/json' } }); }
+          };
+          return;
+        }
+      }
+    } catch (e) { /* fall through */ }
+    // 2) 브라우저 저장소 (이 브라우저에서만 유지)
+    try {
+      localStorage.setItem(STORAGE_KEY + ':probe', '1'); localStorage.removeItem(STORAGE_KEY + ':probe');
+      saver = { kind: 'local', async write(json) { localStorage.setItem(STORAGE_KEY, json); } };
+      return;
+    } catch (e) { /* fall through */ }
+    saver = { kind: 'none', async write() { throw { code: 'unavailable' }; } };
+  }
+
+  async function loadState() {
+    // 아티팩트에 게시된 데이터 파일이 있으면 우선
+    try {
+      const r = await fetch(DATA_PATH, { cache: 'no-store' });
+      if (r.ok) {
+        const ct = (r.headers.get('content-type') || '').toLowerCase();
+        const text = await r.text();
+        if (!ct.includes('html')) { const j = JSON.parse(text); if (j && j.classes) return normalize(j); }
+      }
+    } catch (e) { /* ignore */ }
+    // 브라우저 저장소
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) { const j = JSON.parse(raw); if (j && j.classes) return normalize(j); }
+    } catch (e) { /* ignore */ }
+    return normalize(seed());
+  }
+
+  function setStatus(text, cls = '') { const el = $('#status'); el.textContent = text; el.className = 'status ' + cls; }
+
+  function scheduleSave() {
+    if (!saver) return;
+    setStatus('저장 중…', 'saving');
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(doSave, saver.kind === 'artifact' ? 1200 : 150);
+  }
+  async function doSave() {
+    const json = JSON.stringify(state, null, 2);
+    try {
+      await saver.write(json);
+      setStatus(saver.kind === 'artifact' ? '모두에게 저장됨' : saver.kind === 'local' ? '이 브라우저에 저장됨' : '');
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'conflict') { setStatus('다른 사람이 먼저 저장했어요. 새로 고칩니다…', 'error'); return; }
+      if (code === 'not_writer' || code === 'not_granted') { setStatus('읽기 전용 — 저장 권한이 없어요', 'error'); return; }
+      if (code === 'capability_disabled') { setStatus('이 화면에서는 저장이 꺼져 있어요', 'error'); return; }
+      // 아티팩트 저장이 안 되면 브라우저 저장소로라도 남겨둠
+      try { localStorage.setItem(STORAGE_KEY, json); setStatus('이 브라우저에만 저장됨', 'error'); }
+      catch (e2) { setStatus('저장하지 못했어요', 'error'); }
+    }
+  }
+  function commit() { render(); scheduleSave(); }
+
+  // ---------- derived ----------
+  const personById = (id) => state.people.find(p => p.id === id);
+  const curClasses = () => state.classes.filter(c => c.sem === state.currentSemester);
+  const filterSubject = () => (filter.startsWith('subj:') ? filter.slice(5) : null);
+  const visibleClasses = () => {
+    const subj = filterSubject();
+    return curClasses().filter(c => filter === 'all' || (subj ? subjKey(c.title) === subj : c.personId === filter));
+  };
+  // 간략 모드: 전체 보기에서 이름 없이 얇은 줄만 (사람/과목을 고르면 자동으로 자세히 보기)
+  const isCompact = () => filter === 'all' && !showNames;
+
+  // ---------- render ----------
+  function render() {
+    renderSemesters();
+    renderChips();
+    renderGrid();
+    renderLegend();
+  }
+
+  function renderSemesters() {
+    const sel = $('#semSelect');
+    sel.innerHTML = state.semesters.map(s => `<option value="${esc(s)}"${s === state.currentSemester ? ' selected' : ''}>${esc(s)}</option>`).join('');
+  }
+
+  function renderChips() {
+    const box = $('#chips');
+    const counts = {};
+    curClasses().forEach(c => { counts[c.personId] = (counts[c.personId] || 0) + 1; });
+    const chips = [`<button class="chip" type="button" data-id="all" aria-pressed="${filter === 'all'}">전체 <span class="count">${state.people.length}명</span></button>`]
+      .concat(state.people.map(p => `<button class="chip" type="button" data-id="${p.id}" aria-pressed="${filter === p.id}">${esc(p.name)} <span class="count">${counts[p.id] || 0}</span></button>`));
+    const toggle = filter === 'all'
+      ? `<button class="btn ghost small" type="button" id="namesToggle">${showNames ? '얇은 줄로 보기' : '이름까지 보기'}</button>`
+      : '';
+    const hint = filter === 'all'
+      ? (showNames ? '겹치는 수업은 같은 요일 안에서 아래로 쌓여요.' : '아래 과목 이름 위에 올리면 어디 있는 수업인지 표시돼요.')
+      : '전체를 누르면 연구실 전체 시간표로 돌아가요.';
+    box.innerHTML = chips.join('') + `<span class="spacer"></span>${toggle}<span class="hint">${hint}</span>`;
+    if (filter !== 'all' && !filterSubject() && !personById(filter)) filter = 'all';
+  }
+
+  function renderGrid() {
+    const sheet = $('#sheet');
+    const items = visibleClasses();
+
+    if (!state.people.length) {
+      sheet.innerHTML = `<div class="empty"><strong>아직 연구원이 없어요</strong>"연구원 관리"에서 이름을 추가한 뒤 강의를 넣어주세요.</div>`;
+      return;
+    }
+
+    // 시간 범위: 기본 9~18시, 수업이 벗어나면 확장
+    let startH = 9, endH = 18;
+    let hasSat = false;
+    items.forEach(c => {
+      startH = Math.min(startH, Math.floor(toMin(c.start) / 60));
+      endH = Math.max(endH, Math.ceil(toMin(c.end) / 60));
+      if (c.days.includes(5)) hasSat = true;
+    });
+    const days = hasSat ? 6 : 5;
+    const hours = endH - startH;
+    const todayIdx = (new Date().getDay() + 6) % 7; // 월=0
+
+    // 요일별 이벤트 펼치기 — 같은 과목·같은 시간은 한 블록으로 합치고 듣는 사람을 나열
+    const perDay = Array.from({ length: days }, () => []);
+    items.forEach(c => c.days.forEach(d => {
+      if (d >= days) return;
+      const key = `${c.title.trim()}|${c.start}|${c.end}`;
+      let ev = perDay[d].find(x => x.key === key);
+      if (!ev) {
+        ev = { key, title: c.title, room: c.room, type: c.type, start: c.start, end: c.end, s: toMin(c.start), e: toMin(c.end), ids: [], personIds: [] };
+        perDay[d].push(ev);
+      }
+      ev.ids.push(c.id); ev.personIds.push(c.personId);
+      if (!ev.room && c.room) ev.room = c.room;
+    }));
+
+    const compact = isCompact();
+    const totalMin = hours * 60;
+    const pct = (min) => ((min - startH * 60) / totalMin) * 100;
+    const laneH = compact ? 9 : 26, gap = compact ? 3 : 4;
+
+    let html = `<div class="tt${compact ? ' compact' : ''}" style="--hours:${hours};--hourw:calc(100% / ${hours})">`;
+    // 가로축: 시간
+    html += `<div class="corner"></div><div class="hours">`;
+    for (let h = startH; h <= endH; h++) {
+      const edge = h === startH ? ' first' : (h === endH ? ' last' : '');
+      html += `<span class="h mono${edge}" style="left:${pct(h * 60)}%">${h}시</span>`;
+    }
+    html += `</div>`;
+
+    // 세로축: 요일
+    for (let d = 0; d < days; d++) {
+      const evs = layoutLanes(perDay[d]);
+      const lanes = evs.reduce((m, ev) => Math.max(m, ev.lanes), 0) || 1;
+      const rowH = lanes * laneH + (lanes + 1) * gap;
+      const today = d === todayIdx;
+      html += `<div class="row"><div class="daylab${today ? ' today' : ''}">${DAY_NAMES[d]}</div>`;
+      html += `<div class="track${today ? ' today' : ''}" style="height:${rowH}px">`;
+      evs.forEach(ev => {
+        const people = ev.personIds.map(personById).filter(Boolean);
+        const color = colorOf(ev.title);           // 색은 과목마다 하나
+        const dur = ev.e - ev.s;
+        const names = people.map(p => p.name);
+        const nameText = names.length <= 5 ? names.join(', ') : `${names.slice(0, 4).join(', ')} 외 ${names.length - 4}명`;
+        const tip = `${ev.title} · ${names.join(', ')} · ${fmt(ev.start)}–${fmt(ev.end)}${ev.room ? ' · ' + ev.room : ''}`;
+        const top = gap + ev.lane * (laneH + gap);
+        const cls = ['block'];
+        if (compact) cls.push('bar');
+        // 시간은 가로축이 알려주니 칸에는 과목·사람을 우선 표시
+        const showTag = !compact && dur >= 90 && ev.type && ev.type !== '수강';
+        const showRoom = !compact && dur >= 105 && ev.room;
+        html += `<button type="button" class="${cls.join(' ')}" data-ids="${ev.ids.join(',')}" data-subj="${esc(subjKey(ev.title))}" style="--c:${color};top:${top}px;left:calc(${pct(ev.s)}% + 1px);width:calc(${(dur / totalMin) * 100}% - 2px)" title="${esc(tip)}">
+          <span class="t">${esc(ev.title)}</span>
+          ${names.length ? `<span class="who">${esc(nameText)}</span>` : ''}
+          ${showTag ? `<span class="tag">${esc(ev.type)}</span>` : ''}
+          ${showRoom ? `<span class="meta">${esc(ev.room)}</span>` : ''}
+        </button>`;
+      });
+      html += `</div></div>`;
+    }
+    html += `</div>`;
+    sheet.innerHTML = html;
+  }
+
+  function renderLegend() {
+    const box = $('#legend');
+    const subj = filterSubject();
+    const groups = new Map();
+    curClasses().forEach(c => {
+      const k = subjKey(c.title); if (!k) return;
+      if (!groups.has(k)) groups.set(k, new Set());
+      const p = personById(c.personId); if (p) groups.get(k).add(p.name);
+    });
+    if (!groups.size) { box.innerHTML = ''; return; }
+    const items = [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0], 'ko'));
+    box.innerHTML = `<span class="cap">과목</span>` + items.map(([title, who]) => {
+      const names = [...who];
+      const whoText = names.length <= 3 ? names.join(', ') : `${names.length}명`;
+      return `<button class="li" type="button" data-subj="${esc(title)}" aria-pressed="${subj === title}" style="--c:${colorOf(title)}">
+        <span class="sq"></span>${esc(title)} <span class="who">${esc(whoText)}</span></button>`;
+    }).join('');
+  }
+
+  // 겹치는 이벤트를 나란히 배치 (interval partitioning)
+  function layoutLanes(evs) {
+    evs.sort((a, b) => a.s - b.s || a.e - b.e);
+    const out = [];
+    let cluster = [], clusterEnd = -1;
+    const flush = () => {
+      if (!cluster.length) return;
+      const laneEnds = [];
+      cluster.forEach(ev => {
+        let lane = laneEnds.findIndex(end => end <= ev.s);
+        if (lane === -1) { lane = laneEnds.length; laneEnds.push(ev.e); } else laneEnds[lane] = ev.e;
+        ev.lane = lane;
+      });
+      cluster.forEach(ev => { ev.lanes = laneEnds.length; out.push(ev); });
+      cluster = []; clusterEnd = -1;
+    };
+    evs.forEach(ev => {
+      if (cluster.length && ev.s >= clusterEnd) flush();
+      cluster.push(ev); clusterEnd = Math.max(clusterEnd, ev.e);
+    });
+    flush();
+    return out;
+  }
+
+  function esc(s) { return String(s ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch])); }
+
+  // ---------- class dialog ----------
+  const classDlg = $('#classDlg');
+  // 추가 모드: 여러 명 체크 가능(한 번에 같은 과목을 여러 사람에게 등록) / 수정 모드: 한 명만
+  function fillPeoplePicker(selectedIds, multi) {
+    const box = $('#fPeople');
+    const type = multi ? 'checkbox' : 'radio';
+    box.innerHTML = state.people.length
+      ? state.people.map(p => `<label><input type="${type}" name="fPersonPick" value="${p.id}"${selectedIds.includes(p.id) ? ' checked' : ''}>${esc(p.name)}</label>`).join('')
+      : `<span class="none">아직 연구원이 없어요. 아래에 이름을 입력하면 함께 추가돼요.</span>`;
+    $('#fPeopleHint').hidden = !multi;
+    $('#newPersonWrap').hidden = !multi;
+  }
+  // 과목 색: 제목을 따라가되, 색을 직접 고르면 그 색이 그 과목의 색이 됨
+  let dlgColor = null, dlgColorManual = false;
+  function effectiveColor() {
+    if (dlgColorManual && dlgColor) return dlgColor;
+    const k = subjKey($('#fTitle').value);
+    if (k && state.subjectColors[k]) return state.subjectColors[k];
+    return pickSubjectColor(state, k || 'x');
+  }
+  function renderColorSwatches() {
+    const cur = effectiveColor();
+    const usedBy = {};
+    Object.entries(state.subjectColors).forEach(([t, c]) => { if (!usedBy[c]) usedBy[c] = t; });
+    $('#fColor').innerHTML = PALETTE.map(c => {
+      const owner = usedBy[c];
+      const title = owner && owner !== subjKey($('#fTitle').value) ? `${c} — ${owner}에서 사용 중` : c;
+      return `<button type="button" style="--c:${c}" data-c="${c}" aria-pressed="${c === cur}" title="${esc(title)}"></button>`;
+    }).join('');
+  }
+  $('#fColor').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-c]'); if (!b) return;
+    dlgColor = b.dataset.c; dlgColorManual = true; renderColorSwatches();
+  });
+  $('#fTitle').addEventListener('input', () => { if (!dlgColorManual) renderColorSwatches(); });
+
+  function openClassDialog(id) {
+    editingId = id || null;
+    const c = id ? state.classes.find(x => x.id === id) : null;
+    $('#classDlgTitle').textContent = c ? '강의 수정' : '강의 추가';
+    $('#classDelete').hidden = !c;
+    $('#classErr').textContent = '';
+    fillPeoplePicker(c ? [c.personId] : (personById(filter) ? [filter] : []), !c);
+    $('#fNewPerson').value = '';
+    $('#fTitle').value = c ? c.title : (filterSubject() || '');
+    $('#fRoom').value = c ? (c.room || '') : '';
+    $('#fType').value = c ? (c.type || '수강') : '수강';
+    $('#fStart').value = c ? c.start : '10:30';
+    $('#fEnd').value = c ? c.end : '12:00';
+    document.querySelectorAll('#fDays input').forEach(cb => { cb.checked = c ? c.days.includes(Number(cb.value)) : false; });
+    dlgColor = c ? colorOf(c.title) : null; dlgColorManual = !!c;
+    renderColorSwatches();
+    const titles = [...new Set(state.classes.map(x => subjKey(x.title)).filter(Boolean))].sort();
+    $('#subjectList').innerHTML = titles.map(t => `<option value="${esc(t)}"></option>`).join('');
+    classDlg.showModal();
+    setTimeout(() => (c || state.people.length ? $('#fTitle') : $('#fNewPerson')).focus(), 30);
+  }
+  $('#classCancel').addEventListener('click', () => classDlg.close());
+  $('#classForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const err = $('#classErr');
+    const title = $('#fTitle').value.trim();
+    const days = [...document.querySelectorAll('#fDays input:checked')].map(cb => Number(cb.value));
+    const start = $('#fStart').value, end = $('#fEnd').value;
+    let personIds = [...document.querySelectorAll('#fPeople input:checked')].map(i => i.value);
+    const newNames = editingId ? [] : $('#fNewPerson').value.split(/[,\s]+/).map(s => s.trim()).filter(Boolean);
+    if (!personIds.length && !newNames.length) { err.textContent = '듣는 사람을 한 명 이상 선택해주세요.'; return; }
+    if (!title) { err.textContent = '과목 이름을 입력해주세요.'; return; }
+    if (!days.length) { err.textContent = '요일을 하나 이상 선택해주세요.'; return; }
+    if (!start || !end || toMin(end) <= toMin(start)) { err.textContent = '종료 시간이 시작 시간보다 늦어야 해요.'; return; }
+    newNames.forEach(name => {
+      const existing = state.people.find(p => p.name === name);
+      personIds.push(existing ? existing.id : addPerson(name).id);
+    });
+    personIds = [...new Set(personIds)];
+    state.subjectColors[subjKey(title)] = effectiveColor();
+    const data = { title, room: $('#fRoom').value.trim(), type: $('#fType').value, days, start, end };
+    if (editingId) {
+      const c = state.classes.find(x => x.id === editingId);
+      Object.assign(c, data, { personId: personIds[0] });
+    } else {
+      personIds.forEach(personId => state.classes.push({ id: uid('c'), sem: state.currentSemester, personId, ...data }));
+      if (personIds.length > 1) toast(`${personIds.length}명에게 "${title}"을 추가했어요`);
+    }
+    classDlg.close();
+    commit();
+  });
+  $('#classDelete').addEventListener('click', () => {
+    if (!editingId) return;
+    state.classes = state.classes.filter(c => c.id !== editingId);
+    classDlg.close();
+    commit();
+    toast('강의를 삭제했어요');
+  });
+
+  // ---------- people dialog ----------
+  const peopleDlg = $('#peopleDlg');
+  function addPerson(name) {
+    const p = { id: uid('p'), name };
+    state.people.push(p);
+    return p;
+  }
+  function renderPeopleList() {
+    const box = $('#plist');
+    if (!state.people.length) { box.innerHTML = `<div class="hint">아직 연구원이 없어요. 아래에서 추가해주세요.</div>`; return; }
+    box.innerHTML = state.people.map(p => {
+      const n = state.classes.filter(c => c.personId === p.id && c.sem === state.currentSemester).length;
+      return `<div class="prow" data-id="${p.id}">
+        <input class="name" value="${esc(p.name)}" data-act="name" aria-label="이름">
+        <span class="meta">이번 학기 ${n}개</span>
+        <button type="button" class="btn ghost small danger" data-act="del">삭제</button>
+      </div>`;
+    }).join('');
+  }
+  $('#peopleBtn').addEventListener('click', () => { $('#peopleErr').textContent = ''; $('#peopleConfirm').hidden = true; renderPeopleList(); peopleDlg.showModal(); });
+  $('#peopleClose').addEventListener('click', () => peopleDlg.close());
+  $('#pAddBtn').addEventListener('click', () => {
+    const name = $('#pNewName').value.trim();
+    if (!name) { $('#peopleErr').textContent = '이름을 입력해주세요.'; return; }
+    if (state.people.some(p => p.name === name)) { $('#peopleErr').textContent = '같은 이름의 연구원이 이미 있어요.'; return; }
+    addPerson(name); $('#pNewName').value = ''; $('#peopleErr').textContent = '';
+    renderPeopleList(); commit();
+  });
+  $('#pNewName').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('#pAddBtn').click(); } });
+  $('#plist').addEventListener('change', (e) => {
+    const row = e.target.closest('.prow'); if (!row) return;
+    if (e.target.dataset.act === 'name') {
+      const p = personById(row.dataset.id); const v = e.target.value.trim();
+      if (v) { p.name = v; commit(); } else e.target.value = p.name;
+    }
+  });
+  $('#plist').addEventListener('click', (e) => {
+    const btn = e.target.closest('button'); if (!btn) return;
+    const row = btn.closest('.prow'); const p = personById(row.dataset.id);
+    if (btn.dataset.act === 'del') {
+      const n = state.classes.filter(c => c.personId === p.id).length;
+      const box = $('#peopleConfirm');
+      box.hidden = false;
+      box.innerHTML = `<div class="confirm"><span><strong>${esc(p.name)}</strong> 삭제 — 등록된 강의 ${n}개도 함께 지워져요.</span><span class="spacer"></span>
+        <button type="button" class="btn small" data-act="no">취소</button><button type="button" class="btn small danger" data-act="yes">삭제</button></div>`;
+      box.onclick = (ev) => {
+        const b = ev.target.closest('button'); if (!b) return;
+        if (b.dataset.act === 'yes') {
+          state.people = state.people.filter(x => x.id !== p.id);
+          state.classes = state.classes.filter(c => c.personId !== p.id);
+          if (filter === p.id) filter = 'all';
+          renderPeopleList(); commit();
+        }
+        box.hidden = true; box.innerHTML = '';
+      };
+    }
+  });
+
+  // ---------- semester ----------
+  const semDlg = $('#semDlg');
+  $('#semSelect').addEventListener('change', (e) => { state.currentSemester = e.target.value; commit(); });
+  $('#semAddBtn').addEventListener('click', () => {
+    $('#semErr').textContent = ''; $('#semName').value = suggestNextSemester(); $('#semCopy').checked = false;
+    $('#semDelete').hidden = state.semesters.length < 2;
+    semDlg.showModal();
+  });
+  $('#semCancel').addEventListener('click', () => semDlg.close());
+  $('#semForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = $('#semName').value.trim();
+    if (!name) { $('#semErr').textContent = '학기 이름을 입력해주세요.'; return; }
+    if (state.semesters.includes(name)) { $('#semErr').textContent = '이미 있는 학기예요.'; return; }
+    if ($('#semCopy').checked) {
+      curClasses().forEach(c => state.classes.push({ ...c, id: uid('c'), sem: name, days: [...c.days] }));
+    }
+    state.semesters.push(name); state.currentSemester = name;
+    semDlg.close(); commit();
+    toast(`${name} 학기를 추가했어요`);
+  });
+  $('#semDelete').addEventListener('click', () => {
+    if (state.semesters.length < 2) return;
+    const cur = state.currentSemester;
+    const n = curClasses().length;
+    $('#semErr').innerHTML = `<div class="confirm"><span><strong>${esc(cur)}</strong> 학기와 강의 ${n}개를 삭제할까요?</span><span class="spacer"></span><button type="button" class="btn small" id="semDelNo">취소</button><button type="button" class="btn small danger" id="semDelYes">삭제</button></div>`;
+    $('#semDelNo').onclick = () => { $('#semErr').textContent = ''; };
+    $('#semDelYes').onclick = () => {
+      state.classes = state.classes.filter(c => c.sem !== cur);
+      state.semesters = state.semesters.filter(s => s !== cur);
+      state.currentSemester = state.semesters[state.semesters.length - 1];
+      semDlg.close(); commit();
+    };
+  });
+  function suggestNextSemester() {
+    const m = /^(\d{4})-([12])$/.exec(state.currentSemester);
+    if (!m) return '';
+    return m[2] === '1' ? `${m[1]}-2` : `${Number(m[1]) + 1}-1`;
+  }
+
+  // ---------- data dialog ----------
+  const dataDlg = $('#dataDlg');
+  $('#dataBtn').addEventListener('click', () => { $('#dataText').value = JSON.stringify(state, null, 2); $('#dataErr').textContent = ''; dataDlg.showModal(); });
+  $('#dataClose').addEventListener('click', () => dataDlg.close());
+  $('#dataCopy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText($('#dataText').value); toast('복사했어요'); }
+    catch (e) { $('#dataText').select(); $('#dataErr').textContent = '자동 복사가 막혀 있어요. 선택된 내용을 직접 복사해주세요.'; }
+  });
+  $('#dataImport').addEventListener('click', () => {
+    try {
+      const j = normalize(JSON.parse($('#dataText').value));
+      state = j; filter = 'all'; dataDlg.close(); commit(); toast('데이터를 불러왔어요');
+    } catch (e) { $('#dataErr').textContent = 'JSON 형식이 맞지 않아요.'; }
+  });
+
+  // ---------- global events ----------
+  $('#addBtn').addEventListener('click', () => openClassDialog(null));
+  $('#chips').addEventListener('click', (e) => {
+    if (e.target.closest('#namesToggle')) { showNames = !showNames; render(); return; }
+    const chip = e.target.closest('.chip'); if (!chip) return;
+    filter = chip.dataset.id; render();
+  });
+
+  // 범례: 올리면 해당 과목만 강조, 누르면 그 과목만 자세히 보기
+  const legendBox = $('#legend');
+  legendBox.addEventListener('click', (e) => {
+    const li = e.target.closest('.li'); if (!li) return;
+    const key = 'subj:' + li.dataset.subj;
+    filter = (filter === key) ? 'all' : key;
+    render();
+  });
+  function highlight(subj) {
+    const tt = $('#sheet .tt'); if (!tt || !tt.classList.contains('compact')) return;
+    tt.classList.toggle('dim', !!subj);
+    tt.querySelectorAll('.block').forEach(b => b.classList.toggle('hl', !!subj && b.dataset.subj === subj));
+  }
+  legendBox.addEventListener('mouseover', (e) => { const li = e.target.closest('.li'); if (li) highlight(li.dataset.subj); });
+  legendBox.addEventListener('mouseleave', () => highlight(null));
+  legendBox.addEventListener('focusin', (e) => { const li = e.target.closest('.li'); if (li) highlight(li.dataset.subj); });
+  legendBox.addEventListener('focusout', () => highlight(null));
+  $('#sheet').addEventListener('click', (e) => {
+    const b = e.target.closest('.block'); if (!b) return;
+    const ids = b.dataset.ids.split(',');
+    if (ids.length === 1) { openClassDialog(ids[0]); return; }
+    // 여러 명이 듣는 과목: 누구의 항목을 수정할지 고르기
+    const first = state.classes.find(c => c.id === ids[0]);
+    $('#pickTitle').textContent = first ? first.title : '강의 선택';
+    $('#pickList').innerHTML = ids.map(id => {
+      const c = state.classes.find(x => x.id === id); const p = c && personById(c.personId);
+      if (!c || !p) return '';
+      return `<button type="button" class="chip" data-id="${id}">${esc(p.name)}${c.type && c.type !== '수강' ? ` <span class="count">${esc(c.type)}</span>` : ''}</button>`;
+    }).join('');
+    pickDlg.showModal();
+  });
+  const pickDlg = $('#pickDlg');
+  $('#pickList').addEventListener('click', (e) => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    pickDlg.close(); openClassDialog(b.dataset.id);
+  });
+  $('#pickClose').addEventListener('click', () => pickDlg.close());
+  document.querySelectorAll('dialog').forEach(d => d.addEventListener('click', (e) => { if (e.target === d) d.close(); }));
+
+  let toastTimer;
+  function toast(msg) {
+    let el = $('.toast'); if (!el) { el = document.createElement('div'); el.className = 'toast'; document.body.appendChild(el); }
+    el.textContent = msg; clearTimeout(toastTimer); toastTimer = setTimeout(() => el.remove(), 2200);
+  }
+
+  // ---------- boot ----------
+  (async () => {
+    state = await loadState();
+    render();
+    await initSaver();
+    if (saver.kind === 'artifact') setStatus('변경하면 모두에게 저장돼요');
+    else if (saver.kind === 'local') setStatus('이 브라우저에 저장돼요');
+    $('#footNote').textContent = saver.kind === 'artifact'
+      ? '블록을 누르면 수정·삭제할 수 있어요. 변경 내용은 이 링크를 보는 모두에게 반영됩니다.'
+      : '블록을 누르면 수정·삭제할 수 있어요. 파일로 배포할 때는 "데이터 내보내기"로 JSON을 받아 HTML의 tt-seed 블록에 넣어주세요.';
+  })();
+})();
+</script>
+
+</body></html>
