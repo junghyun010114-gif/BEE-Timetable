@@ -138,6 +138,8 @@
   .chip[aria-pressed="true"] .dot { box-shadow: 0 0 0 2px var(--bg); }
   .chip .count { font-size: 11px; opacity: .7; }
   .chips .spacer { flex: 1; }
+  .chips .tools { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  #freeToggle { white-space: nowrap; }
   .hint { font-size: 12px; color: var(--text-3); }
 
   /* ---------- timetable ---------- */
@@ -182,6 +184,25 @@
   .tt .track.today { background-color: color-mix(in srgb, var(--accent) 5%, transparent); }
   .tt .row:last-child .track, .tt .row:last-child .daylab { border-bottom: 0; }
   .tt .row { display: contents; }
+
+  /* 모두 수업이 없는 시간 */
+  .freeband {
+    position: absolute; top: 0; bottom: 0;
+    background: color-mix(in srgb, var(--accent) 11%, transparent);
+    border-left: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+    border-right: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+    display: flex; align-items: flex-end; justify-content: center;
+    pointer-events: none; overflow: hidden;
+  }
+  .freeband span {
+    font-size: 10.5px; color: var(--accent); font-weight: 600;
+    padding-bottom: 2px; white-space: nowrap;
+  }
+  .daylab .freesum {
+    display: block; font-size: 10.5px; font-weight: 600; color: var(--accent);
+    margin-top: 2px;
+  }
+  .daylab { flex-direction: column; gap: 0; line-height: 1.2; }
 
   .block {
     position: absolute;
@@ -992,6 +1013,8 @@
   let state = null;
   let filter = 'all';              // 'all' | personId | 'subj:과목명'
   let showNames = true;            // 전체 보기에서 이름까지 보여줄지
+  let showFree = false;            // 모두 수업이 없는 시간 표시
+  const LAB_START = 10 * 60, LAB_END = 18 * 60;   // 연구실에 있기로 한 시간대 (10:00~18:00)
   let editingId = null;
   let saver = null;                // { kind: 'artifact' | 'local' | 'none', write(json) }
   let saveTimer = null;
@@ -1123,13 +1146,16 @@
     curClasses().forEach(c => { counts[c.personId] = (counts[c.personId] || 0) + 1; });
     const chips = [`<button class="chip" type="button" data-id="all" aria-pressed="${filter === 'all'}">전체 <span class="count">${state.people.length}명</span></button>`]
       .concat(state.people.map(p => `<button class="chip" type="button" data-id="${p.id}" aria-pressed="${filter === p.id}">${esc(p.name)} <span class="count">${counts[p.id] || 0}</span></button>`));
-    const toggle = filter === 'all'
-      ? `<button class="btn ghost small" type="button" id="namesToggle">${showNames ? '얇은 줄로 보기' : '이름까지 보기'}</button>`
-      : '';
-    const hint = filter === 'all'
-      ? (showNames ? '겹치는 수업은 같은 요일 안에서 아래로 쌓여요.' : '아래 과목 이름 위에 올리면 어디 있는 수업인지 표시돼요.')
-      : '전체를 누르면 연구실 전체 시간표로 돌아가요.';
-    box.innerHTML = chips.join('') + `<span class="spacer"></span>${toggle}<span class="hint">${hint}</span>`;
+    const toggle = `<button class="chip" type="button" id="freeToggle" aria-pressed="${showFree}">🟩 다 같이 비는 시간</button>`
+      + (filter === 'all'
+        ? `<button class="btn ghost small" type="button" id="namesToggle">${showNames ? '얇은 줄로 보기' : '이름까지 보기'}</button>`
+        : '');
+    const hint = showFree
+      ? '10시~18시 중 아무도 수업이 없는 시간을 초록으로 표시했어요.'
+      : (filter === 'all'
+        ? (showNames ? '겹치는 수업은 같은 요일 안에서 아래로 쌓여요.' : '아래 과목 이름 위에 올리면 어디 있는 수업인지 표시돼요.')
+        : '전체를 누르면 연구실 전체 시간표로 돌아가요.');
+    box.innerHTML = chips.join('') + `<span class="spacer"></span><span class="tools">${toggle}<span class="hint">${hint}</span></span>`;
     if (filter !== 'all' && !filterSubject() && !personById(filter)) filter = 'all';
   }
 
@@ -1188,8 +1214,17 @@
       const lanes = evs.reduce((m, ev) => Math.max(m, ev.lanes), 0) || 1;
       const rowH = lanes * laneH + (lanes + 1) * gap;
       const today = d === todayIdx;
-      html += `<div class="row"><div class="daylab${today ? ' today' : ''}">${DAY_NAMES[d]}</div>`;
+      const free = showFree ? freeSlots(d) : [];
+      const freeTotal = free.reduce((sum, [s, e]) => sum + (e - s), 0);
+      html += `<div class="row"><div class="daylab${today ? ' today' : ''}">${DAY_NAMES[d]}` +
+        (showFree ? `<span class="freesum">${freeTotal ? durText(freeTotal) : '없음'}</span>` : '') + `</div>`;
       html += `<div class="track${today ? ' today' : ''}" style="height:${rowH}px">`;
+      // 빈 시간 띠는 수업 막대 뒤에 깔리도록 먼저 그림
+      free.forEach(([s, e]) => {
+        const wide = (e - s) >= 60;
+        html += `<div class="freeband" style="left:${pct(s)}%;width:${((e - s) / totalMin) * 100}%">` +
+          (wide ? `<span class="mono">${hhmm(s)}–${hhmm(e)}</span>` : '') + `</div>`;
+      });
       evs.forEach(ev => {
         const people = ev.personIds.map(personById).filter(Boolean);
         const color = colorOf(ev.title);           // 색은 과목마다 하나
@@ -1233,6 +1268,30 @@
       return `<button class="li" type="button" data-subj="${esc(title)}" aria-pressed="${subj === title}" style="--c:${colorOf(title)}">
         <span class="sq"></span>${esc(title)} <span class="who">${esc(whoText)}</span></button>`;
     }).join('');
+  }
+
+  // 10:00~18:00 중 아무도 수업이 없는 시간대 (사람 필터와 무관하게 연구실 전체 기준)
+  function freeSlots(day) {
+    const busy = [];
+    curClasses().forEach(c => {
+      if (!c.days.includes(day)) return;
+      const s = Math.max(toMin(c.start), LAB_START), e = Math.min(toMin(c.end), LAB_END);
+      if (e > s) busy.push([s, e]);
+    });
+    busy.sort((a, b) => a[0] - b[0]);
+    const out = [];
+    let cur = LAB_START;
+    busy.forEach(([s, e]) => {
+      if (s > cur) out.push([cur, s]);
+      cur = Math.max(cur, e);
+    });
+    if (cur < LAB_END) out.push([cur, LAB_END]);
+    return out;
+  }
+  const hhmm = (m) => String(Math.floor(m / 60)).padStart(2, '0') + ':' + String(m % 60).padStart(2, '0');
+  function durText(m) {
+    const h = Math.floor(m / 60), mm = m % 60;
+    return (h ? h + '시간' : '') + (mm ? (h ? ' ' : '') + mm + '분' : (h ? '' : '0분'));
   }
 
   // 겹치는 이벤트를 나란히 배치 (interval partitioning)
@@ -1472,6 +1531,7 @@
   // ---------- global events ----------
   $('#addBtn').addEventListener('click', () => openClassDialog(null));
   $('#chips').addEventListener('click', (e) => {
+    if (e.target.closest('#freeToggle')) { showFree = !showFree; render(); return; }
     if (e.target.closest('#namesToggle')) { showNames = !showNames; render(); return; }
     const chip = e.target.closest('.chip'); if (!chip) return;
     filter = chip.dataset.id; render();
